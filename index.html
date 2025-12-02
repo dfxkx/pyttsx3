@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyttsx3 - 离线文本转语音库</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧菜单栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>pyttsx3</h1>
+                <p>离线文本转语音</p>
+            </div>
+            <ul class="menu">
+                <li class="menu-item active" data-page="home">
+                    <i class="fa fa-home"></i>
+                    <span>首页</span>
+                </li>
+                <li class="menu-item" data-page="about">
+                    <i class="fa fa-info-circle"></i>
+                    <span>项目介绍</span>
+                </li>
+                <li class="menu-item" data-page="usage">
+                    <i class="fa fa-cogs"></i>
+                    <span>使用指南</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <header class="top-header">
+                <div class="search-box">
+                    <i class="fa fa-search"></i>
+                    <input type="text" placeholder="搜索文档..." id="searchInput">
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fa fa-moon-o"></i>
+                </button>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 首页内容 -->
+                <div class="page active" id="home-page">
+                    <div class="hero-section">
+                        <h1>欢迎使用 pyttsx3</h1>
+                        <p class="subtitle">功能强大的离线Python文本转语音库</p>
+                        <div class="features">
+                            <div class="feature-card">
+                                <i class="fa fa-plug"></i>
+                                <h3>完全离线</h3>
+                                <p>无需联网即可实现文本转语音</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fa fa-language"></i>
+                                <h3>多语言支持</h3>
+                                <p>支持多种语言和语音</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fa fa-sliders"></i>
+                                <h3>高度自定义</h3>
+                                <p>可调节语速、音量、语音</p>
+                            </div>
+                        </div>
+                        <div class="quick-start">
+                            <h2>快速开始</h2>
+                            <pre><code>pip install pyttsx3
+import pyttsx3
+engine = pyttsx3.init()
+engine.say("你好，欢迎使用pyttsx3")
+engine.runAndWait()</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 项目介绍页面 -->
+                <div class="page" id="about-page">
+                    <div class="about-section">
+                        <h1>项目介绍</h1>
+                        <div class="about-content">
+                            <h2>什么是 pyttsx3？</h2>
+                            <p>pyttsx3是一个开源的Python文本转语音库，允许你将文本转换为自然的语音输出，完全无需依赖云端API，所有处理都在本地完成。</p>
+                            
+                            <h2>主要特性</h2>
+                            <ul>
+                                <li>完全离线运行，无需互联网连接</li>
+                                <li>支持Windows、macOS和Linux跨平台使用</li>
+                                <li>支持多种语音引擎：sapi5、nsss、espeak</li>
+                                <li>可以动态切换语音</li>
+                                <li>调节语速和音量</li>
+                                <li>保存语音输出为音频文件</li>
+                            </ul>
+
+                            <h2>项目背景</h2>
+                            <p>pyttsx3项目旨在提供一个简单易用、功能强大的离线文本转语音解决方案，帮助开发者轻松在他们的应用程序中添加语音功能，无需担心API调用限制和网络延迟问题。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 使用指南页面 -->
+                <div class="page" id="usage-page">
+                    <div class="usage-section">
+                        <h1>使用指南</h1>
+                        
+                        <div class="usage-step">
+                            <h2>1. 安装</h2>
+                            <pre><code># 使用pip安装
+pip install pyttsx3
+
+# 对于Linux用户，需要安装espeak
+sudo apt-get install espeak</code></pre>
+                        </div>
+
+                        <div class="usage-step">
+                            <h2>2. 基础使用</h2>
+                            <pre><code>import pyttsx3
+
+# 初始化引擎
+engine = pyttsx3.init()
+
+# 朗读文本
+engine.say("Hello World")
+engine.say("这是一个测试")
+
+# 等待朗读完成
+engine.runAndWait()</code></pre>
+                        </div>
+
+                        <div class="usage-step">
+                            <h2>3. 高级功能</h2>
+                            <h3>调节语速</h3>
+                            <pre><code>rate = engine.getProperty('rate')
+engine.setProperty('rate', rate-50)  # 减慢语速</code></pre>
+
+                            <h3>调节音量</h3>
+                            <pre><code>volume = engine.getProperty('volume')
+engine.setProperty('volume', volume+0.25)  # 增大音量</code></pre>
+
+                            <h3>切换语音</h3>
+                            <pre><code>voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)  # 切换到女性语音</code></pre>
+                        </div>
+
+                        <div class="usage-step">
+                            <h2>4. 保存到文件</h2>
+                            <pre><code>engine.save_to_file('Hello World', 'test.mp3')
+engine.runAndWait()</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
