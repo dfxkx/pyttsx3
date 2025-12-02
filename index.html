@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyttsx3 - Python文本转语音库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 自定义样式 */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .dark {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        
+        .light {
+            background-color: #f7fafc;
+            color: #2d3748;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-toggle {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 50;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                display: none;
+            }
+            
+            .overlay.active {
+                display: block;
+            }
+        }
+        
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .dark .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .theme-toggle {
+            transition: all 0.2s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .dark .code-block {
+            background-color: #1a202c;
+        }
+    </style>
+</head>
+<body class="light">
+    <!-- 侧边栏 -->
+    <div class="sidebar w-64 bg-white dark:bg-gray-800 shadow-lg h-screen fixed left-0 top-0">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">pyttsx3</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Python文本转语音库</p>
+        </div>
+        <nav class="p-4">
+            <ul class="space-y-2">
+                <li>
+                    <a href="#home" class="nav-link active flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-home mr-3"></i>
+                        <span>首页</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#introduction" class="nav-link flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-info-circle mr-3"></i>
+                        <span>项目介绍</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#usage" class="nav-link flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-code mr-3"></i>
+                        <span>使用方法</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#features" class="nav-link flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-star mr-3"></i>
+                        <span>功能特性</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#examples" class="nav-link flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-file-code mr-3"></i>
+                        <span>示例代码</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#faq" class="nav-link flex items-center p-2 rounded-lg text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-question-circle mr-3"></i>
+                        <span>常见问题</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="ml-64">
+        <!-- 顶部导航栏 -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-30">
+            <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+                <!-- 移动端菜单按钮 -->
+                <button class="sidebar-toggle text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+
+                <!-- 搜索框 -->
+                <div class="flex-1 max-w-md mx-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" class="search-input block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="搜索...">
+                    </div>
+                </div>
+
+                <!-- 主题切换按钮 -->
+                <button class="theme-toggle p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 页面内容 -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- 首页 -->
+            <section id="home" class="page-content">
+                <div class="flex flex-col md:flex-row items-center justify-between mb-12">
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <h2 class="text-4xl font-bold mb-4 text-gray-900 dark:text-white">pyttsx3</h2>
+                        <p class="text-xl text-gray-600 dark:text-gray-300 mb-6">Python文本转语音库</p>
+                        <p class="text-gray-700 dark:text-gray-400 mb-8">pyttsx3是一个用于将文本转换为语音的Python库，支持多种平台和语音引擎。</p>
+                        <div class="flex space-x-4">
+                            <a href="#introduction" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                                了解更多
+                            </a>
+                            <a href="#usage" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg transition duration-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200">
+                                开始使用
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-center mb-4">
+                                <i class="fas fa-volume-up text-6xl text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-center mb-2 text-gray-900 dark:text-white">文本转语音测试</h3>
+                            <p class="text-center text-gray-600 dark:text-gray-300 mb-4">在下方输入文本并点击播放按钮进行测试</p>
+                            <div class="space-y-4">
+                                <textarea id="test-text" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="输入要转换为语音的文本...">Hello, world! This is a test of the pyttsx3 library.</textarea>
+                                <button id="play-test" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+                                    <i class="fas fa-play mr-2"></i>
+                                    播放语音
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 特性卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-microphone text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">多语音引擎支持</h3>
+                        <p class="text-gray-600 dark:text-gray-300">支持多种语音引擎，包括SAPI5、NSSS、eSpeak等。</p>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-globe text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">跨平台支持</h3>
+                        <p class="text-gray-600 dark:text-gray-300">支持Windows、macOS和Linux等多种操作系统。</p>
+                    </div>
+                    <div class="card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-sliders-h text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">高度可定制</h3>
+                        <p class="text-gray-600 dark:text-gray-300">支持调整语速、音量、语音类型等多种参数。</p>
+                    </div>
+                </div>
+
+                <!-- 快速开始 -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">快速开始</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6">只需几行代码即可开始使用pyttsx3：</p>
+                    <div class="code-block mb-6">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的文本
+text = "Hello, world!"
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                    <a href="#usage" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                        查看详细使用方法
+                    </a>
+                </div>
+            </section>
+
+            <!-- 项目介绍 -->
+            <section id="introduction" class="page-content hidden">
+                <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">项目介绍</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">什么是pyttsx3？</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">pyttsx3是一个用于将文本转换为语音的Python库，它提供了一个简单易用的接口，可以与多种语音引擎进行交互。</p>
+                    <p class="text-gray-700 dark:text-gray-300">pyttsx3的主要特点是跨平台支持和多语音引擎支持，它可以在Windows、macOS和Linux等多种操作系统上运行，并支持SAPI5、NSSS、eSpeak等多种语音引擎。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">项目历史</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">pyttsx3是pyttsx库的一个分支，pyttsx库最初是由Peter Parente开发的，用于在Python 2.x中实现文本转语音功能。</p>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">随着Python 3.x的普及，pyttsx库逐渐不再维护，因此一些开发者创建了pyttsx3库，使其能够在Python 3.x中运行，并添加了一些新的功能和改进。</p>
+                    <p class="text-gray-700 dark:text-gray-300">目前，pyttsx3库由社区维护，并且在不断更新和改进中。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">为什么选择pyttsx3？</h3>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>跨平台支持：可以在Windows、macOS和Linux等多种操作系统上运行。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>多语音引擎支持：支持SAPI5、NSSS、eSpeak等多种语音引擎。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>简单易用的接口：提供了一个简单易用的接口，可以快速实现文本转语音功能。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>高度可定制：支持调整语速、音量、语音类型等多种参数。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>开源免费：pyttsx3是一个开源项目，遵循MIT许可证，可以免费使用和修改。</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 使用方法 -->
+            <section id="usage" class="page-content hidden">
+                <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">使用方法</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">安装pyttsx3</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">可以使用pip命令来安装pyttsx3：</p>
+                    <div class="code-block mb-4">
+                        <pre><code>pip install pyttsx3</code></pre>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">如果在Linux系统上安装，可能需要安装额外的依赖：</p>
+                    <div class="code-block">
+                        <pre><code>sudo apt-get install espeak</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">基本使用</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下是pyttsx3的基本使用方法：</p>
+                    <div class="code-block mb-4">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的文本
+text = "Hello, world!"
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">在这个例子中，我们首先导入了pyttsx3库，然后初始化了一个引擎对象，接着设置了要转换的文本，最后调用了say()方法和runAndWait()方法来转换文本为语音并播放。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">调整参数</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">pyttsx3支持调整多种参数，包括语速、音量、语音类型等：</p>
+                    <div class="code-block mb-4">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置语速（范围：0-200，默认值：200）
+en.setProperty('rate', 150)
+
+# 设置音量（范围：0.0-1.0，默认值：1.0）
+en.setProperty('volume', 0.7)
+
+# 获取所有可用的语音
+voices = en.getProperty('voices')
+
+# 设置语音（voices[0]为男性，voices[1]为女性）
+en.setProperty('voice', voices[1].id)
+
+# 设置要转换的文本
+text = "Hello, world!"
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">在这个例子中，我们调整了语速为150，音量为0.7，并设置了女性语音。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">保存语音到文件</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">pyttsx3还支持将语音保存到文件中：</p>
+                    <div class="code-block mb-4">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的文本
+text = "Hello, world!"
+
+# 将语音保存到文件中
+en.save_to_file(text, 'output.mp3')
+en.runAndWait()</code></pre>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">在这个例子中，我们调用了save_to_file()方法来将语音保存到output.mp3文件中。</p>
+                </div>
+            </section>
+
+            <!-- 功能特性 -->
+            <section id="features" class="page-content hidden">
+                <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">功能特性</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-microphone text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">多语音引擎支持</h3>
+                        <p class="text-gray-600 dark:text-gray-300">pyttsx3支持多种语音引擎，包括：</p>
+                        <ul class="space-y-1 mt-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>SAPI5（Windows）</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>NSSS（macOS）</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>eSpeak（Linux）</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-globe text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">跨平台支持</h3>
+                        <p class="text-gray-600 dark:text-gray-300">pyttsx3可以在多种操作系统上运行，包括：</p>
+                        <ul class="space-y-1 mt-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>Windows</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>macOS</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>Linux</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-sliders-h text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">高度可定制</h3>
+                        <p class="text-gray-600 dark:text-gray-300">pyttsx3支持调整多种参数，包括：</p>
+                        <ul class="space-y-1 mt-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>语速（0-200）</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>音量（0.0-1.0）</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>语音类型（男性/女性）</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-file-audio text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">语音保存</h3>
+                        <p class="text-gray-600 dark:text-gray-300">pyttsx3支持将语音保存到文件中，支持多种音频格式，包括：</p>
+                        <ul class="space-y-1 mt-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>MP3</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>WAV</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                                <span>OGG</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">其他特性</h3>
+                    <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>支持中文、英文等多种语言的文本转语音。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>支持实时语音播放和语音文件保存两种模式。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>提供了简单易用的Python接口，方便开发者快速集成到自己的项目中。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>开源免费，遵循MIT许可证，可以免费使用和修改。</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 示例代码 -->
+            <section id="examples" class="page-content hidden">
+                <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">示例代码</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">基本示例</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下是一个基本的pyttsx3示例，用于将文本转换为语音并播放：</p>
+                    <div class="code-block">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的文本
+text = "Hello, world! This is a test of the pyttsx3 library."
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">调整语速和音量</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下示例演示了如何调整语速和音量：</p>
+                    <div class="code-block">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置语速（范围：0-200，默认值：200）
+en.setProperty('rate', 150)
+
+# 设置音量（范围：0.0-1.0，默认值：1.0）
+en.setProperty('volume', 0.7)
+
+# 设置要转换的文本
+text = "Hello, world! This is a test of the pyttsx3 library."
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">选择语音类型</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下示例演示了如何选择不同的语音类型：</p>
+                    <div class="code-block">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 获取所有可用的语音
+voices = en.getProperty('voices')
+
+# 打印所有可用的语音
+for voice in voices:
+    print("Voice:")
+    print("- ID:", voice.id)
+    print("- Name:", voice.name)
+    print("- Languages:", voice.languages)
+    print("- Gender:", voice.gender)
+    print("- Age:", voice.age)
+    print()
+
+# 设置语音（voices[0]为男性，voices[1]为女性）
+en.setProperty('voice', voices[1].id)
+
+# 设置要转换的文本
+text = "Hello, world! This is a test of the pyttsx3 library."
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">保存语音到文件</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下示例演示了如何将语音保存到文件中：</p>
+                    <div class="code-block">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的文本
+text = "Hello, world! This is a test of the pyttsx3 library."
+
+# 将语音保存到文件中
+en.save_to_file(text, 'output.mp3')
+en.runAndWait()
+
+print("语音已保存到output.mp3文件中。")</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">中文文本转语音</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">以下示例演示了如何将中文文本转换为语音：</p>
+                    <div class="code-block">
+                        <pre><code>import pyttsx3
+
+# 初始化引擎
+en = pyttsx3.init()
+
+# 设置要转换的中文文本
+text = "你好，世界！这是pyttsx3库的一个测试。"
+
+# 转换文本为语音并播放
+en.say(text)
+en.runAndWait()</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 常见问题 -->
+            <section id="faq" class="page-content hidden">
+                <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">常见问题</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">1. pyttsx3支持哪些操作系统？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">pyttsx3支持Windows、macOS和Linux等多种操作系统。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">2. pyttsx3支持哪些语音引擎？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">pyttsx3支持SAPI5（Windows）、NSSS（macOS）和eSpeak（Linux）等多种语音引擎。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">3. pyttsx3支持哪些语言？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">pyttsx3支持多种语言的文本转语音，包括中文、英文、法文、德文、西班牙文等。具体支持的语言取决于所使用的语音引擎。</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">4. 如何调整语速和音量？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">可以使用setProperty()方法来调整语速和音量：</p>
+                    <div class="code-block mt-2">
+                        <pre><code># 设置语速（范围：0-200，默认值：200）
+en.setProperty('rate', 150)
+
+# 设置音量（范围：0.0-1.0，默认值：1.0）
+en.setProperty('volume', 0.7)</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">5. 如何选择不同的语音类型？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">可以使用getProperty('voices')方法来获取所有可用的语音，然后使用setProperty('voice', voice.id)方法来选择不同的语音类型：</p>
+                    <div class="code-block mt-2">
+                        <pre><code># 获取所有可用的语音
+voices = en.getProperty('voices')
+
+# 设置语音（voices[0]为男性，voices[1]为女性）
+en.setProperty('voice', voices[1].id)</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">6. 如何将语音保存到文件中？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">可以使用save_to_file()方法来将语音保存到文件中：</p>
+                    <div class="code-block mt-2">
+                        <pre><code># 将语音保存到文件中
+en.save_to_file(text, 'output.mp3')
+en.runAndWait()</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">7. pyttsx3是否支持Python 3.x？</h3>
+                    <p class="text-gray-700 dark:text-gray-300">是的，pyttsx3是pyttsx库的一个分支，专门用于支持Python 3.x。</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 移动端遮罩层 -->
+    <div class="overlay"></div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 主题切换
+            const themeToggle = document.querySelector('.theme-toggle');
+            const body = document.body;
+
+            // 检查本地存储中的主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                body.classList.remove('light', 'dark');
+                body.classList.add(savedTheme);
+                updateThemeIcon(savedTheme);
+            }
+
+            // 主题切换按钮点击事件
+            themeToggle.addEventListener('click', function() {
+                if (body.classList.contains('light')) {
+                    body.classList.remove('light');
+                    body.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    updateThemeIcon('dark');
+                } else {
+                    body.classList.remove('dark');
+                    body.classList.add('light');
+                    localStorage.setItem('theme', 'light');
+                    updateThemeIcon('light');
+                }
+            });
+
+            // 更新主题图标
+            function updateThemeIcon(theme) {
+                const icon = themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            }
+
+            // 页面导航
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageContents = document.querySelectorAll('.page-content');
+
+            // 导航链接点击事件
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // 获取目标页面ID
+                    const targetId = this.getAttribute('href');
+
+                    // 移除所有导航链接的活动状态
+                    navLinks.forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+
+                    // 隐藏所有页面内容
+                    pageContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+
+                    // 添加当前导航链接的活动状态
+                    this.classList.add('active');
+
+                    // 显示目标页面内容
+                    const targetContent = document.querySelector(targetId);
+                    if (targetContent) {
+                        targetContent.classList.remove('hidden');
+                    }
+
+                    // 关闭移动端侧边栏
+                    closeMobileSidebar();
+                });
+            });
+
+            // 移动端侧边栏
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+
+            // 侧边栏切换按钮点击事件
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            });
+
+            // 遮罩层点击事件
+            overlay.addEventListener('click', function() {
+                closeMobileSidebar();
+            });
+
+            // 关闭移动端侧边栏
+            function closeMobileSidebar() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+
+            // 搜索功能
+            const searchInput = document.querySelector('.search-input');
+
+            // 搜索输入事件
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                // 这里可以添加搜索逻辑
+                // 例如，搜索页面内容并高亮显示
+                console.log('搜索:', searchTerm);
+            });
+
+            // 语音测试功能
+            const playTestButton = document.getElementById('play-test');
+            const testTextArea = document.getElementById('test-text');
+
+            // 播放测试按钮点击事件
+            playTestButton.addEventListener('click', function() {
+                const text = testTextArea.value;
+
+                // 检查浏览器是否支持语音合成
+                if ('speechSynthesis' in window) {
+                    // 取消之前的语音合成
+                    window.speechSynthesis.cancel();
+
+                    // 创建语音合成对象
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    // 设置语音合成参数
+                    utterance.lang = 'en-US'; // 语言
+                    utterance.rate = 1.0; // 语速
+                    utterance.pitch = 1.0; // 音调
+                    utterance.volume = 1.0; // 音量
+
+                    // 开始语音合成
+                    window.speechSynthesis.speak(utterance);
+
+                    // 更新按钮状态
+                    playTestButton.innerHTML = '<i class="fas fa-stop mr-2"></i>停止语音';
+                    playTestButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    playTestButton.classList.add('bg-red-600', 'hover:bg-red-700');
+
+                    // 语音合成结束事件
+                    utterance.onend = function() {
+                        playTestButton.innerHTML = '<i class="fas fa-play mr-2"></i>播放语音';
+                        playTestButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                        playTestButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                    };
+
+                    // 语音合成错误事件
+                    utterance.onerror = function() {
+                        alert('语音合成失败，请检查浏览器设置。');
+                        playTestButton.innerHTML = '<i class="fas fa-play mr-2"></i>播放语音';
+                        playTestButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                        playTestButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                    };
+                } else {
+                    alert('您的浏览器不支持语音合成功能，请使用最新版本的Chrome、Firefox或Safari浏览器。');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
